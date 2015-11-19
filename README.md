@@ -1,0 +1,2 @@
+# VaderJack
+Blackjack in C++.
