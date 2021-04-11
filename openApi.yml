@@ -1,0 +1,1009 @@
+openapi: 3.0.1
+info:
+  title: EVAL REST API Specification
+  version: 2021 R1
+servers:
+- url: /eval-external/api
+security:
+- api_oauth: []
+paths:
+  /investigators:
+    get:
+      tags:
+      - Investigator
+      summary: Search for Investigators
+      description: Returns a list of Investigators matching the given search criteria.
+      operationId: getInvestigatorList
+      parameters:
+      - name: name
+        in: query
+        description: Primary search parameter, behaves same as Investigator landing
+          page search box, meaning not case-sensitive, includes substring matches
+          but only starting from first character, checks first/middle/last names and
+          identifiers.
+        schema:
+          type: string
+      - name: identifier
+        in: query
+        description: Search by contact identifier across all identifier types.
+        schema:
+          type: string
+      - name: email
+        in: query
+        description: Search by email.
+        schema:
+          type: string
+      - name: primaryDepartment
+        in: query
+        schema:
+          type: array
+          description: Search by the investigator's primary department. Results include
+            investigators in departments that have the requested department as a parent.
+            For example, requesting "School of Medicine" will return investigators
+            assigned to all departments within the School of Medicine.
+          items:
+            type: string
+      - name: center
+        in: query
+        schema:
+          type: array
+          description: Search by the investigator's current center membership.
+          items:
+            type: string
+      - name: programArea
+        in: query
+        schema:
+          type: array
+          description: Search by the investigator's current program area membership.
+          items:
+            type: string
+      - name: membershipType
+        in: query
+        schema:
+          type: array
+          description: Search by the investigator's current membership type.
+          items:
+            type: string
+      - name: page
+        in: query
+        schema:
+          type: integer
+      - name: pageSize
+        in: query
+        description: How many records to return per a page.
+        schema:
+          type: integer
+      - name: modifiedSince
+        in: query
+        description: Search for when the last time a investigator has been created
+          or modified.
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: A list of Investigators matching the search criteria.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "400":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+        "401":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+        "403":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+      x-Permissions:
+        permissions:
+        - Data Elements > Investigators - Read
+  /investigators/{InvestigatorId}:
+    get:
+      tags:
+      - Investigator
+      summary: Get an Investigator by its ID
+      description: Returns the Investigator with the given ID.
+      operationId: getInvestigatorById
+      parameters:
+      - name: InvestigatorId
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: The Investigator matching the given ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+        "400":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+        "401":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+        "403":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+        "404":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+      x-Permissions:
+        permissions:
+        - Data Elements > Investigators - Read
+  /investigators/{InvestigatorId}/centermembership/{InvestigatorCenterMembershipId}:
+    get:
+      tags:
+      - InvestigatorCenterMembership
+      summary: Get an Investigator's Membership by its ID
+      description: Returns the Investigator Center Membership with the given ID.
+      operationId: getInvestigatorCenterMembershipById
+      parameters:
+      - name: InvestigatorId
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: InvestigatorCenterMembershipId
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: The Investigator's historical membership matching the given
+            IDs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalCenterMembership'
+        "400":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+        "401":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+        "403":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+        "404":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+      x-Permissions:
+        permissions:
+        - Data Elements > Centers > Center Membership - View
+  /grants:
+    get:
+      tags:
+      - Grant
+      summary: Search for Grants
+      description: Returns a list of Grants matching the given search criteria.
+      operationId: getGrantList
+      parameters:
+      - name: identifiers
+        in: query
+        description: Primary search parameter. Looks for grants whose title, sponsor
+          award number, or institution award number partially matches the given string.
+          Award numbers at both the lifetime and period levels are compared.
+        schema:
+          type: string
+      - name: sponsor
+        in: query
+        description: Search by a Grant's Sponsor
+        schema:
+          type: string
+      - name: awardType
+        in: query
+        description: Search by a Grant's Award Type
+        schema:
+          type: string
+      - name: grantType
+        in: query
+        description: Search by a Grant's Type
+        schema:
+          type: string
+      - name: grantStatus
+        in: query
+        description: Search by a Grant's Status
+        schema:
+          type: string
+      - name: fieldsOfTraining
+        in: query
+        description: Search by a Grant's Disease/Therapy Area
+        schema:
+          type: string
+      - name: startDate
+        in: query
+        description: Search by a Grant's Start date
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        description: Search by a Grant's End Date
+        schema:
+          type: string
+          format: date
+      - name: modifiedSince
+        in: query
+        description: Search for when the last time a grant was created or modified.
+        schema:
+          type: string
+          format: date
+      - name: page
+        in: query
+        schema:
+          type: integer
+      - name: pageSize
+        in: query
+        description: How many records to return per a page.
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: A list of Grants matching the search criteria.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Grant'
+        "400":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+        "401":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+        "403":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+      x-Permissions:
+        permissions:
+        - Data Elements > Grants - Read
+  /grants/{GrantId}:
+    get:
+      tags:
+      - Grant
+      summary: Get a Grant by its ID
+      description: Returns the Grant with the given ID.
+      operationId: getGrantById
+      parameters:
+      - name: GrantId
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: The Grant matching the given ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Grant'
+        "400":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+        "401":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+        "403":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+        "404":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+      x-Permissions:
+        permissions:
+        - Data Elements > Grants - Read
+components:
+  schemas:
+    Investigator:
+      type: object
+      properties:
+        investigatorID:
+          minimum: 0
+          type: integer
+        creationDate:
+          type: string
+          format: date
+        updatedDate:
+          type: string
+          format: date
+        firstName:
+          maxLength: 255
+          type: string
+        middleName:
+          maxLength: 255
+          type: string
+        lastName:
+          maxLength: 255
+          type: string
+        email:
+          maxLength: 254
+          type: string
+        homeOrganization:
+          $ref: '#/components/schemas/Investigator_homeOrganization'
+        suffix:
+          maxLength: 30
+          type: string
+        credentials:
+          maxLength: 30
+          type: string
+        contactIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Investigator_contactIdentifiers'
+        contactNumbers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Investigator_contactNumbers'
+        address:
+          $ref: '#/components/schemas/Investigator_address'
+        primaryDepartment:
+          $ref: '#/components/schemas/Investigator_primaryDepartment'
+        diseaseTherapyArea:
+          type: array
+          items:
+            $ref: '#/components/schemas/Investigator_address_stateProvince'
+        stageOfResearch:
+          type: array
+          items:
+            $ref: '#/components/schemas/Investigator_address_stateProvince'
+        titles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Investigator_titles'
+        demographics:
+          $ref: '#/components/schemas/Investigator_demographics'
+        pubMedSettings:
+          $ref: '#/components/schemas/Investigator_pubMedSettings'
+        investigatorPubReviewSettings:
+          $ref: '#/components/schemas/Investigator_investigatorPubReviewSettings'
+        investigatorCurrentMembership:
+          type: array
+          description: List of an Investigator's current Center Memberships
+          items:
+            $ref: '#/components/schemas/Investigator_investigatorCurrentMembership'
+      description: Details about an Investigator
+    MessageError:
+      type: object
+      properties:
+        message:
+          type: string
+          description: |
+            The error message accompanying this response.
+            Example: Contact 123 does not exist.
+        errorType:
+          type: string
+          description: The type of the error. Can be used to distinguish the actual
+            error type that occurred.
+      description: An error occurred while processing the request.
+    HistoricalCenterMembership:
+      type: object
+      properties:
+        investigatorMembershipID:
+          minimum: 0
+          type: integer
+        investigatorCenter:
+          $ref: '#/components/schemas/Investigator_investigatorCenter'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        membershipType:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoricalCenterMembership_membershipType'
+        programArea:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoricalCenterMembership_programArea'
+        researchInterests:
+          maxLength: 4000
+          type: string
+        notes:
+          maxLength: 4000
+          type: string
+      description: Details about an Investigator's Center Membership
+    Grant:
+      required:
+      - title
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        creationDate:
+          type: string
+          format: date
+        updatedDate:
+          type: string
+          format: date
+        title:
+          maxLength: 1000
+          minLength: 0
+          type: string
+        department:
+          $ref: '#/components/schemas/Academic_Unit'
+        sponsor:
+          $ref: '#/components/schemas/Sponsor'
+        sponsorAwardNumber:
+          maxLength: 100
+          minLength: 0
+          type: string
+        awardType:
+          $ref: '#/components/schemas/Award_Type'
+        grantType:
+          $ref: '#/components/schemas/Grant_Type'
+        grantStatus:
+          $ref: '#/components/schemas/Grant_Status'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        awardDirects:
+          maximum: 9999999999999.99
+          minimum: 0
+          type: number
+        awardTotal:
+          maximum: 9999999999999.99
+          minimum: 0
+          type: number
+        institutionAwardNumber:
+          maxLength: 4000
+          minLength: 0
+          type: string
+        r01Equivalent:
+          type: boolean
+        diseaseTherapyArea:
+          type: array
+          items:
+            $ref: '#/components/schemas/Field_Of_Training'
+        researchStage:
+          type: array
+          items:
+            $ref: '#/components/schemas/Research_Stage'
+        sourceInstitution:
+          maxLength: 255
+          minLength: 0
+          type: string
+        sourcePILastName:
+          maxLength: 50
+          minLength: 0
+          type: string
+        sourcePIFirstName:
+          maxLength: 50
+          minLength: 0
+          type: string
+        notes:
+          maxLength: 4000
+          minLength: 0
+          type: string
+        parentGrant:
+          type: string
+      description: Details about a Grant
+    Academic_Unit:
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        fullPath:
+          maxLength: 4000
+          type: string
+        name:
+          maxLength: 100
+          type: string
+        parent:
+          type: object
+    Sponsor:
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        name:
+          maxLength: 255
+          type: string
+        institutionCode:
+          maxLength: 255
+          type: string
+        sponsorCategory:
+          $ref: '#/components/schemas/Sponsor_Category'
+        active:
+          type: boolean
+    Sponsor_Category:
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        active:
+          type: boolean
+        sponsorDesignation:
+          $ref: '#/components/schemas/Sponsor_Designation'
+    Sponsor_Designation:
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        peerReviewed:
+          type: boolean
+        active:
+          type: boolean
+        code:
+          maxLength: 15
+          type: string
+    Award_Type:
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        name:
+          maxLength: 255
+          type: string
+        active:
+          type: boolean
+        code:
+          maxLength: 10
+          type: string
+        awardPurpose:
+          $ref: '#/components/schemas/Award_Purpose'
+    Award_Purpose:
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        active:
+          type: boolean
+        code:
+          maxLength: 15
+          type: string
+    Grant_Type:
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        active:
+          type: boolean
+    Grant_Status:
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        active:
+          type: boolean
+        code:
+          maxLength: 25
+          type: string
+    Field_Of_Training:
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        description:
+          maxLength: 100
+          type: string
+        code:
+          maxLength: 50
+          type: string
+        active:
+          type: boolean
+    Research_Stage:
+      type: object
+      properties:
+        id:
+          minimum: 1
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        active:
+          type: boolean
+        code:
+          maxLength: 25
+          type: string
+    UnexpectedError:
+      type: object
+      description: unexpected error
+    inline_response_200:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Investigator'
+        meta:
+          $ref: '#/components/schemas/inline_response_200_meta'
+        links:
+          type: object
+    inline_response_200_1:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Investigator'
+        meta:
+          type: object
+        links:
+          type: object
+    Investigator_homeOrganization:
+      type: object
+      properties:
+        id:
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 255
+          type: string
+        active:
+          type: boolean
+    Investigator_contactIdentifierType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        active:
+          type: boolean
+        code:
+          maxLength: 25
+          type: string
+    Investigator_contactIdentifiers:
+      type: object
+      properties:
+        contactIdentifierType:
+          $ref: '#/components/schemas/Investigator_contactIdentifierType'
+        contactIdentifier:
+          maxLength: 50
+          type: string
+    Investigator_contactNumbers:
+      type: object
+      properties:
+        phoneType:
+          $ref: '#/components/schemas/Investigator_contactIdentifierType'
+        phoneNumber:
+          maxLength: 50
+          type: string
+    Investigator_address_stateProvince:
+      type: object
+      properties:
+        id:
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        active:
+          type: boolean
+        code:
+          maxLength: 25
+          type: string
+    Investigator_address:
+      type: object
+      properties:
+        addressLine1:
+          maxLength: 100
+          type: string
+        addressLine2:
+          maxLength: 100
+          type: string
+        city:
+          maxLength: 100
+          type: string
+        stateProvince:
+          $ref: '#/components/schemas/Investigator_address_stateProvince'
+        country:
+          $ref: '#/components/schemas/Investigator_address_stateProvince'
+        postalCode:
+          maxLength: 20
+          type: string
+    Investigator_primaryDepartment:
+      type: object
+      properties:
+        id:
+          minimum: 0
+          type: integer
+        fullPath:
+          maxLength: 4000
+          type: string
+        name:
+          maxLength: 100
+          type: string
+        parent:
+          type: object
+    Investigator_investigatorTitle:
+      type: object
+      properties:
+        id:
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        active:
+          type: boolean
+    Investigator_titles:
+      type: object
+      properties:
+        investigatorTitle:
+          $ref: '#/components/schemas/Investigator_investigatorTitle'
+        additionalDetails:
+          maxLength: 250
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        displayIndex:
+          minimum: 0
+          type: integer
+    Investigator_demographics_gender:
+      type: object
+      properties:
+        id:
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 25
+          type: string
+        active:
+          type: boolean
+        code:
+          maxLength: 25
+          type: string
+    Investigator_demographics_race:
+      type: object
+      properties:
+        id:
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 50
+          type: string
+        active:
+          type: boolean
+        code:
+          maxLength: 25
+          type: string
+    Investigator_demographics:
+      type: object
+      properties:
+        gender:
+          $ref: '#/components/schemas/Investigator_demographics_gender'
+        ethnicity:
+          $ref: '#/components/schemas/Investigator_demographics_gender'
+        race:
+          type: array
+          items:
+            $ref: '#/components/schemas/Investigator_demographics_race'
+        dateOfBirth:
+          type: string
+          format: date
+        disabled:
+          maxLength: 10
+          type: string
+        disadvantaged:
+          maxLength: 10
+          type: string
+    Investigator_pubMedSettings_aliases:
+      type: object
+      properties:
+        lastName:
+          maxLength: 255
+          type: string
+        firstName:
+          maxLength: 255
+          type: string
+        includeInSearch:
+          type: boolean
+        includeInMatch:
+          type: boolean
+    Investigator_pubMedSettings:
+      type: object
+      properties:
+        includeInSearch:
+          type: boolean
+        includeInMatch:
+          type: boolean
+        searchStartDate:
+          type: string
+          format: date
+        searchEndDate:
+          type: string
+          format: date
+        aliases:
+          type: array
+          items:
+            $ref: '#/components/schemas/Investigator_pubMedSettings_aliases'
+    Investigator_investigatorPubReviewSettings:
+      type: object
+      properties:
+        receivesIPREmails:
+          type: boolean
+        reviewEmails:
+          type: array
+          items:
+            maxLength: 255
+            type: string
+            format: email
+        internalReviewedOnly:
+          type: string
+        cancerRelevanceReviews:
+          type: string
+    Investigator_investigatorCenter:
+      type: object
+      properties:
+        id:
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 255
+          type: string
+    Investigator_currentMembershipType:
+      type: object
+      properties:
+        id:
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        code:
+          maxLength: 15
+          type: string
+        active:
+          type: boolean
+    Investigator_investigatorCurrentMembership:
+      type: object
+      properties:
+        investigatorCenterMembershipID:
+          minimum: 0
+          type: integer
+        investigatorCenter:
+          $ref: '#/components/schemas/Investigator_investigatorCenter'
+        currentMembershipType:
+          $ref: '#/components/schemas/Investigator_currentMembershipType'
+        currentProgramAreas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Investigator_investigatorCenter'
+        active:
+          type: boolean
+        link:
+          type: string
+    HistoricalCenterMembership_type:
+      type: object
+      properties:
+        id:
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 255
+          type: string
+        code:
+          maxLength: 15
+          type: string
+        active:
+          type: boolean
+    HistoricalCenterMembership_membershipType:
+      type: object
+      properties:
+        effectiveDate:
+          type: string
+          format: date
+        type:
+          $ref: '#/components/schemas/HistoricalCenterMembership_type'
+    HistoricalCenterMembership_programArea:
+      type: object
+      properties:
+        area:
+          $ref: '#/components/schemas/Investigator_investigatorCenter'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+    inline_response_200_meta:
+      type: object
+      properties:
+        totalRecords:
+          type: integer
+        totalPages:
+          type: integer
+  responses: {}
+  securitySchemes:
+    api_oauth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: /forte-platform-web/api/oauth/token
+          scopes:
+            All: All permissions assigned to client.
